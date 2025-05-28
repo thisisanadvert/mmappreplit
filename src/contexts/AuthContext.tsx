@@ -75,13 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .from('building_users')
             .select('building_id')
             .eq('user_id', session.user.id)
-            .limit(1)
+            .maybeSingle()
             .then(({ data, error }) => {
               if (error) {
                 console.error('Error fetching building ID:', error);
-              } else if (data && data.length > 0) {
+              } else if (data) {
                 // Update user metadata with the building ID
-                const buildingId = data[0].building_id;
+                const buildingId = data.building_id;
                 
                 // Update local user state
                 userWithRole.metadata = {

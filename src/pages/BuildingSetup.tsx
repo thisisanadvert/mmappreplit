@@ -15,10 +15,12 @@ import Card from '../components/ui/Card';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { useFeatures } from '../hooks/useFeatures';
 
 const BuildingSetup = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isDevelopmentEnvironment } = useFeatures();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,23 +40,23 @@ const BuildingSetup = () => {
       // Try to get building ID from user metadata
       let buildingId = user?.metadata?.buildingId;
       
-      if (!buildingId) {
+      if (!buildingId && user?.id) {
         // If not in metadata, try to get it from building_users table
         try {
           const { data: buildingUserData, error: buildingUserError } = await supabase
             .from('building_users')
-            .select('building_id')
+            .select('*')
             .eq('user_id', user?.id)
-            .single();
+            .limit(1);
             
-          if (buildingUserError) {
-            console.error('Error fetching building user data:', buildingUserError);
+          if (buildingUserError && buildingUserError.code !== 'PGRST116') {
+            console.error('Error fetching building user data:', buildingUserError.message);
             setIsLoading(false);
             return;
           }
           
-          if (buildingUserData) {
-            buildingId = buildingUserData.building_id;
+          if (buildingUserData && buildingUserData.length > 0) {
+            buildingId = buildingUserData[0].building_id;
             
             // Update user metadata with the building ID
             await supabase.auth.updateUser({
@@ -74,7 +76,7 @@ const BuildingSetup = () => {
       try {
         const { data, error } = await supabase
           .from('buildings')
-          .select('*')
+          .select()
           .eq('id', buildingId)
           .single();
 
@@ -118,20 +120,23 @@ const BuildingSetup = () => {
       // Get the building ID from user metadata or from building_users table
       let buildingId = user?.metadata?.buildingId;
       
-      if (!buildingId && user?.id) {
+      if (!buildingId) {
         // Try to find the building ID from the building_users table
         const { data: buildingUserData, error: buildingUserError } = await supabase
           .from('building_users')
-          .select('building_id')
+          .select('*')
           .eq('user_id', user?.id)
-          .single();
+          .limit(1);
           
-        if (buildingUserError && buildingUserError.code !== 'PGRST116') {
-          throw new Error('Error finding your building: ' + buildingUserError.message);
+        if (buildingUserError) {
+          console.error('Error finding building:', buildingUserError);
+          if (buildingUserError.code !== 'PGRST116') {
+            throw new Error('Error finding your building: ' + buildingUserError.message);
+          }
         }
         
-        if (buildingUserData) {
-          buildingId = buildingUserData.building_id;
+        if (buildingUserData && buildingUserData.length > 0) {
+          buildingId = buildingUserData[0].building_id;
           
           // Update user metadata with the building ID
           await supabase.auth.updateUser({
@@ -141,7 +146,7 @@ const BuildingSetup = () => {
           // If no building found, create a new one
           const { data: newBuilding, error: newBuildingError } = await supabase
             .from('buildings')
-            .insert([
+            .insert(
               {
                 name: buildingData.name,
                 address: buildingData.address,
@@ -151,8 +156,8 @@ const BuildingSetup = () => {
                 service_charge_frequency: buildingData.serviceChargeFrequency,
                 management_structure: buildingData.managementStructure
               }
-            ])
-            .select();
+            )
+            .select('*');
             
           if (newBuildingError) throw newBuildingError;
           
@@ -194,7 +199,7 @@ const BuildingSetup = () => {
           management_structure: buildingData.managementStructure
         })
         .eq('id', buildingId)
-        .select();
+        .select('*');
 
       if (error) throw error;
 
@@ -243,7 +248,7 @@ const BuildingSetup = () => {
       <Card>
         {success ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="mb-4 rounded-full bg-success-100 p-6">
+            <div className="mb-4 rounded-full bg-success-100 p-4">
               <CheckCircle2 className="h-8 w-8 text-success-600" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-gray-900">Building Setup Complete!</h3>
@@ -466,7 +471,7 @@ const BuildingSetup = () => {
                 variant="outline"
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                Back
               </Button>
               <Button
                 type="submit"
