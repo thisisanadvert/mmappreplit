@@ -45,9 +45,9 @@ const BuildingSetup = () => {
         try {
           const { data: buildingUserData, error: buildingUserError } = await supabase
             .from('building_users')
-            .select('*')
+            .select('building_id')
             .eq('user_id', user?.id)
-            .limit(1);
+            .maybeSingle();
             
           if (buildingUserError && buildingUserError.code !== 'PGRST116') {
             console.error('Error fetching building user data:', buildingUserError.message);
@@ -55,8 +55,8 @@ const BuildingSetup = () => {
             return;
           }
           
-          if (buildingUserData && buildingUserData.length > 0) {
-            buildingId = buildingUserData[0].building_id;
+          if (buildingUserData) {
+            buildingId = buildingUserData.building_id;
             
             // Update user metadata with the building ID
             await supabase.auth.updateUser({
@@ -76,11 +76,11 @@ const BuildingSetup = () => {
       try {
         const { data, error } = await supabase
           .from('buildings')
-          .select()
+          .select('*')
           .eq('id', buildingId)
-          .single();
+          .maybeSingle();
 
-        if (error) throw error;
+        if (error && error.code !== 'PGRST116') throw error;
 
         if (data) {
           setBuildingData({
@@ -120,23 +120,21 @@ const BuildingSetup = () => {
       // Get the building ID from user metadata or from building_users table
       let buildingId = user?.metadata?.buildingId;
       
-      if (!buildingId) {
+      if (!buildingId && user?.id) {
         // Try to find the building ID from the building_users table
         const { data: buildingUserData, error: buildingUserError } = await supabase
           .from('building_users')
-          .select('*')
+          .select('building_id')
           .eq('user_id', user?.id)
-          .limit(1);
+          .maybeSingle();
           
-        if (buildingUserError) {
+        if (buildingUserError && buildingUserError.code !== 'PGRST116') {
           console.error('Error finding building:', buildingUserError);
-          if (buildingUserError.code !== 'PGRST116') {
-            throw new Error('Error finding your building: ' + buildingUserError.message);
-          }
+          throw new Error('Error finding your building: ' + buildingUserError.message);
         }
         
-        if (buildingUserData && buildingUserData.length > 0) {
-          buildingId = buildingUserData[0].building_id;
+        if (buildingUserData) {
+          buildingId = buildingUserData.building_id;
           
           // Update user metadata with the building ID
           await supabase.auth.updateUser({
@@ -146,23 +144,22 @@ const BuildingSetup = () => {
           // If no building found, create a new one
           const { data: newBuilding, error: newBuildingError } = await supabase
             .from('buildings')
-            .insert(
-              {
-                name: buildingData.name,
-                address: buildingData.address,
-                total_units: buildingData.totalUnits,
-                building_age: buildingData.buildingAge,
-                building_type: buildingData.buildingType,
-                service_charge_frequency: buildingData.serviceChargeFrequency,
-                management_structure: buildingData.managementStructure
-              }
-            )
-            .select('*');
+            .insert({
+              name: buildingData.name,
+              address: buildingData.address,
+              total_units: buildingData.totalUnits,
+              building_age: buildingData.buildingAge,
+              building_type: buildingData.buildingType,
+              service_charge_frequency: buildingData.serviceChargeFrequency,
+              management_structure: buildingData.managementStructure
+            })
+            .select()
+            .single();
             
           if (newBuildingError) throw newBuildingError;
           
-          if (newBuilding && newBuilding.length > 0) {
-            buildingId = newBuilding[0].id;
+          if (newBuilding) {
+            buildingId = newBuilding.id;
             
             // Create building_users entry
             const { error: buildingUserError } = await supabase
@@ -197,7 +194,7 @@ const BuildingSetup = () => {
           building_type: buildingData.buildingType,
           service_charge_frequency: buildingData.serviceChargeFrequency,
           management_structure: buildingData.managementStructure
-        })
+        }, { returning: 'minimal' })
         .eq('id', buildingId)
         .select('*');
 
@@ -209,7 +206,7 @@ const BuildingSetup = () => {
         .update({
           completed: true,
           completed_at: new Date().toISOString()
-        })
+        }, { returning: 'minimal' })
         .eq('user_id', user.id)
         .eq('step_name', 'building');
 

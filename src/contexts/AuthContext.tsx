@@ -73,11 +73,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Fetch the building ID from building_users table
           supabase
             .from('building_users')
-            .select('building_id')
+            .select('*')
             .eq('user_id', session.user.id)
-            .maybeSingle()
+            .maybeSingle() // Use maybeSingle instead of limit(1)
             .then(({ data, error }) => {
-              if (error) {
+              if (error && error.code !== 'PGRST116') {
                 console.error('Error fetching building ID:', error);
               } else if (data) {
                 // Update user metadata with the building ID
