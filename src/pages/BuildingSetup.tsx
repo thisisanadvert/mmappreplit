@@ -172,7 +172,7 @@ const BuildingSetup = () => {
                   user_id: user.id,
                   role: user.role
                 }
-              ], { returning: 'minimal' });
+              ]);
               
             if (buildingUserError) throw buildingUserError;
             
