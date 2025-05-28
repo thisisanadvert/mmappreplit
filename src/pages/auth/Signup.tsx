@@ -90,13 +90,12 @@ const Signup = () => {
     setError(null);
     
     try {
-      // Log the form data (without password) for debugging
       console.log('Submitting signup with data:', {
         ...formData,
         password: '[REDACTED]'
       });
       
-      // Create user account
+      // Step 1: Create user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: 'temp123', // We'll prompt them to change this on first login
@@ -116,16 +115,56 @@ const Signup = () => {
       if (authError) {
         throw authError;
       }
-      if (authError) {
-        console.error('Auth error details:', authError);
-        throw authError;
-      }
       
       if (!authData?.user) {
         throw new Error('User creation failed - no user returned');
       }
       
       console.log('User created successfully:', authData.user.id);
+
+      // Step 2: Create building if user is a director
+      if (formData.role === 'rtm-director' || formData.role === 'sof-director') {
+        try {
+          // Create the building
+          const { data: buildingData, error: buildingError } = await supabase
+            .from('buildings')
+            .insert({
+              name: formData.buildingName || 'My Building',
+              address: formData.buildingAddress || 'Address not set',
+              total_units: 1,
+              management_structure: formData.role === 'rtm-director' ? 'rtm' : 'share-of-freehold'
+            })
+            .select()
+            .single();
+            
+          if (buildingError) {
+            console.error('Error creating building:', buildingError);
+          } else if (buildingData) {
+            // Create building_users association
+            const { error: associationError } = await supabase
+              .from('building_users')
+              .insert({
+                building_id: buildingData.id,
+                user_id: authData.user.id,
+                role: formData.role
+              });
+              
+            if (associationError) {
+              console.error('Error creating building association:', associationError);
+            } else {
+              // Update user metadata with building ID
+              await supabase.auth.updateUser({
+                data: { 
+                  buildingId: buildingData.id 
+                }
+              });
+            }
+          }
+        } catch (buildingErr) {
+          console.error('Error in building creation process:', buildingErr);
+          // Don't fail the signup if building creation fails
+        }
+      }
       
       setFormSubmitted(true);
     } catch (error) {
