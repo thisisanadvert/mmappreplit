@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, UserPlus, Building, Users, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -103,74 +104,42 @@ const Signup = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    console.log('Submitting registration form...');
     
     try {
-      console.log('Submitting registration form:', { ...formData, password: '[REDACTED]' });
-      
-      // First try to use the interest_registrations table directly
-      const { error: insertError } = await supabase
+      // Try direct database insertion first
+      const { data, error } = await supabase
         .from('interest_registrations')
-        .insert([
-          { 
-            email: formData.email, 
-            first_name: formData.firstName, 
-            last_name: formData.lastName, 
-            role: formData.role, 
-            building_name: formData.buildingName, 
-            building_address: formData.buildingAddress, 
-            unit_number: formData.unitNumber, 
-            phone: formData.phone
-          }
-        ]);
-
-      if (insertError) {
-        console.warn('Could not insert into interest_registrations:', insertError);
+        .insert({
+          email: formData.email,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          role: formData.role,
+          building_name: formData.buildingName,
+          building_address: formData.buildingAddress,
+          unit_number: formData.unitNumber,
+          phone: formData.phone,
+          company_name: formData.companyName
+        })
+        .select();
         
-        // Try to use the edge function as a fallback
-        try {
-          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-interest`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({
-              email: formData.email,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              role: formData.role,
-              buildingName: formData.buildingName,
-              buildingAddress: formData.buildingAddress,
-              unitNumber: formData.unitNumber,
-              phone: formData.phone
-            })
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to register interest');
-          }
-        } catch (edgeFunctionError) {
-          console.warn('Edge function failed:', edgeFunctionError);
-          
-          // If both database and edge function fail, store locally
-          if (!storeLocalRegistration()) {
-            throw new Error('Could not register your interest. Please try again later.');
-          }
-        }
+      if (error) {
+        console.error('Database insertion error:', error);
+        throw new Error('Failed to register interest. Please try again later.');
       }
       
-      // If we got here, registration was successful one way or another
+      console.log('Registration successful!');
       setFormSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
       
-      // Last resort - try to store locally if all else fails
-      if (storeLocalRegistration()) {
-        setFormSubmitted(true);
-      } else {
-        setError(typeof error === 'object' && error !== null ? (error as Error).message : 'Failed to register interest');
-      }
+      // Store locally as fallback
+      storeLocalRegistration();
+      
+      // Show error message
+      setError(typeof error === 'object' && error !== null 
+        ? (error as Error).message 
+        : 'Failed to register interest. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
@@ -280,7 +249,10 @@ const Signup = () => {
                 <form onSubmit={handleWaitlistSubmit} className="space-y-6">
                   {error && (
                     <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-md">
+                      <div className="flex items-start">
+                        <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
                       {error}
+                      </div>
                     </div>
                   )}
                   
