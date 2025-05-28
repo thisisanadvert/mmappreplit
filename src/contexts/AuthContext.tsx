@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Fetch the building ID from building_users table
           supabase
             .from('building_users')
-            .select('*')
+            .select('building_id')
             .eq('user_id', session.user.id)
             .maybeSingle() // Use maybeSingle instead of limit(1)
             .then(({ data, error }) => {

@@ -154,7 +154,7 @@ const BuildingSetup = () => {
               management_structure: buildingData.managementStructure
             })
             .select()
-            .single();
+            .maybeSingle();
             
           if (newBuildingError) throw newBuildingError;
           
@@ -170,7 +170,7 @@ const BuildingSetup = () => {
                   user_id: user.id,
                   role: user.role
                 }
-              ]);
+              ], { returning: 'minimal' });
               
             if (buildingUserError) throw buildingUserError;
             
