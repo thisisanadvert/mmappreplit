@@ -115,6 +115,7 @@ const Signup = () => {
 
       if (authError) {
         throw authError;
+      }
       if (authError) {
         console.error('Auth error details:', authError);
         throw authError;
