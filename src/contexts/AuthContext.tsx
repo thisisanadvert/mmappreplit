@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session?.user) {
         // Create a user object with metadata from the session
@@ -70,37 +70,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // If we don't have a buildingId in metadata, try to fetch it
         if (!userWithRole.metadata?.buildingId) {
-          // Fetch the building ID from building_users table
-          supabase
-            .from('building_users')
-            .select('building_id')
-            .eq('user_id', session.user.id)
-            .maybeSingle()
-            .then(({ data, error }) => {
-              if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching building ID:', error);
-              } else if (data) {
-                // Update user metadata with the building ID
-                const buildingId = data.building_id;
-                
-                // Update local user state
-                userWithRole.metadata = {
-                  ...userWithRole.metadata,
-                  buildingId
-                };
-                setUser(userWithRole);
-                
-                // Also update the user metadata in Supabase
-                supabase.auth.updateUser({
-                  data: { 
-                    ...session.user.user_metadata,
-                    buildingId 
-                  }
-                }).catch(err => {
-                  console.error('Error updating user metadata:', err);
-                });
-              }
-            });
+          try {
+            // Fetch the building ID from building_users table
+            const { data, error } = await supabase
+              .from('building_users')
+              .select('building_id')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+
+            // Only proceed if we have data and no error
+            if (data && !error) {
+              const buildingId = data.building_id;
+              
+              // Update local user state with building ID
+              userWithRole.metadata = {
+                ...userWithRole.metadata,
+                buildingId
+              };
+              
+              // Update the user metadata in Supabase
+              await supabase.auth.updateUser({
+                data: { 
+                  ...session.user.user_metadata,
+                  buildingId 
+                }
+              });
+            }
+          } catch (err) {
+            console.error('Error fetching/updating building data:', err);
+          }
         }
         
         setUser(userWithRole);
