@@ -90,6 +90,12 @@ const Signup = () => {
     setError(null);
     
     try {
+      // Log the form data (without password) for debugging
+      console.log('Submitting signup with data:', {
+        ...formData,
+        password: '[REDACTED]'
+      });
+      
       // Create user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -109,7 +115,16 @@ const Signup = () => {
 
       if (authError) {
         throw authError;
+      if (authError) {
+        console.error('Auth error details:', authError);
+        throw authError;
       }
+      
+      if (!authData?.user) {
+        throw new Error('User creation failed - no user returned');
+      }
+      
+      console.log('User created successfully:', authData.user.id);
       
       setFormSubmitted(true);
     } catch (error) {
