@@ -80,7 +80,11 @@ const BuildingSetup = () => {
           .eq('id', buildingId)
           .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) {
+          if (error.code !== 'PGRST116') {
+            throw error;
+          }
+        }
 
         if (data) {
           setBuildingData({
