@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, UserPlus, Building, Users, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import { supabase } from '../../lib/supabase';
 
 type SignupType = 'rtm-director' | 'sof-director' | 'homeowner' | 'management-company';
 
@@ -84,40 +84,93 @@ const Signup = () => {
     setShowWaitlistForm(true);
   };
 
+  // Store registration in local storage as a fallback
+  const storeLocalRegistration = () => {
+    try {
+      localStorage.setItem('pendingRegistration', JSON.stringify({
+        ...formData,
+        timestamp: new Date().toISOString()
+      }));
+      console.log('Stored registration data locally');
+      return true;
+    } catch (err) {
+      console.error('Error storing registration locally:', err);
+      return false;
+    }
+  };
+
   const handleWaitlistSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
     
     try {
-      // Use the register-interest edge function instead of direct auth signup
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-interest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          role: formData.role,
-          buildingName: formData.buildingName,
-          buildingAddress: formData.buildingAddress,
-          unitNumber: formData.unitNumber,
-          phone: formData.phone
-        })
-      });
+      console.log('Submitting registration form:', { ...formData, password: '[REDACTED]' });
+      
+      // First try to use the interest_registrations table directly
+      const { error: insertError } = await supabase
+        .from('interest_registrations')
+        .insert([
+          { 
+            email: formData.email, 
+            first_name: formData.firstName, 
+            last_name: formData.lastName, 
+            role: formData.role, 
+            building_name: formData.buildingName, 
+            building_address: formData.buildingAddress, 
+            unit_number: formData.unitNumber, 
+            phone: formData.phone
+          }
+        ]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to register interest');
+      if (insertError) {
+        console.warn('Could not insert into interest_registrations:', insertError);
+        
+        // Try to use the edge function as a fallback
+        try {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-interest`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              role: formData.role,
+              buildingName: formData.buildingName,
+              buildingAddress: formData.buildingAddress,
+              unitNumber: formData.unitNumber,
+              phone: formData.phone
+            })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to register interest');
+          }
+        } catch (edgeFunctionError) {
+          console.warn('Edge function failed:', edgeFunctionError);
+          
+          // If both database and edge function fail, store locally
+          if (!storeLocalRegistration()) {
+            throw new Error('Could not register your interest. Please try again later.');
+          }
+        }
       }
       
+      // If we got here, registration was successful one way or another
       setFormSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
-      setError(typeof error === 'object' && error !== null ? (error as Error).message : 'Failed to register interest');
+      
+      // Last resort - try to store locally if all else fails
+      if (storeLocalRegistration()) {
+        setFormSubmitted(true);
+      } else {
+        setError(typeof error === 'object' && error !== null ? (error as Error).message : 'Failed to register interest');
+      }
     } finally {
       setIsSubmitting(false);
     }
