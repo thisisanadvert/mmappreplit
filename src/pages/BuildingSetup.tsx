@@ -49,8 +49,8 @@ const BuildingSetup = () => {
             .eq('user_id', user?.id)
             .maybeSingle();
             
-          if (buildingUserError && buildingUserError.code !== 'PGRST116') {
-            console.error('Error fetching building user data:', buildingUserError.message);
+          if (buildingUserError) {
+            console.error('Error fetching building user data:', buildingUserError);
             setIsLoading(false);
             return;
           }
@@ -81,9 +81,7 @@ const BuildingSetup = () => {
           .maybeSingle();
 
         if (error) {
-          if (error.code !== 'PGRST116') {
-            throw error;
-          }
+          throw error;
         }
 
         if (data) {
@@ -132,7 +130,7 @@ const BuildingSetup = () => {
           .eq('user_id', user?.id)
           .maybeSingle();
           
-        if (buildingUserError && buildingUserError.code !== 'PGRST116') {
+        if (buildingUserError) {
           console.error('Error finding building:', buildingUserError);
           throw new Error('Error finding your building: ' + buildingUserError.message);
         }
@@ -198,7 +196,7 @@ const BuildingSetup = () => {
           building_type: buildingData.buildingType,
           service_charge_frequency: buildingData.serviceChargeFrequency,
           management_structure: buildingData.managementStructure
-        }, { returning: 'minimal' })
+        })
         .eq('id', buildingId)
         .select('*');
 
@@ -210,7 +208,7 @@ const BuildingSetup = () => {
         .update({
           completed: true,
           completed_at: new Date().toISOString()
-        }, { returning: 'minimal' })
+        })
         .eq('user_id', user.id)
         .eq('step_name', 'building');
 

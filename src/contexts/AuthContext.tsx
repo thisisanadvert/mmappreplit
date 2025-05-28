@@ -75,9 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .from('building_users')
             .select('building_id')
             .eq('user_id', session.user.id)
-            .maybeSingle() // Use maybeSingle instead of limit(1)
+            .maybeSingle()
             .then(({ data, error }) => {
-              if (error && error.code !== 'PGRST116') {
+              if (error) {
                 console.error('Error fetching building ID:', error);
               } else if (data) {
                 // Update user metadata with the building ID
