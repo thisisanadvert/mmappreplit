@@ -23,7 +23,7 @@ import { supabase } from '../../lib/supabase';
 
 type SignupType = 'rtm-director' | 'sof-director' | 'homeowner' | 'management-company';
 
-interface WaitlistFormData {
+interface SignupFormData {
   email: string;
   firstName: string;
   lastName: string;
@@ -80,9 +80,9 @@ const signupOptions = [
 
 const Signup = () => {
   const [selectedType, setSelectedType] = useState<SignupType>('rtm-director');
-  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
+  const [showSignupForm, setShowSignupForm] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState<WaitlistFormData>({
+  const [formData, setFormData] = useState<SignupFormData>({
     email: '',
     firstName: '',
     lastName: '',
@@ -96,7 +96,7 @@ const Signup = () => {
     setSelectedType(type);
     const option = signupOptions.find(opt => opt.id === type);
     setFormData(prev => ({ ...prev, role: type }));
-    setShowWaitlistForm(true);
+    setShowSignupForm(true);
   };
 
   // Store registration in local storage as a fallback
@@ -114,7 +114,7 @@ const Signup = () => {
     }
   };
 
-  const handleWaitlistSubmit = async (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
@@ -225,7 +225,7 @@ const Signup = () => {
           </div>
         ) : (
           <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
-            {!showWaitlistForm ? (
+            {!showSignupForm ? (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 gap-4">
                   {signupOptions.map((option) => (
@@ -265,7 +265,7 @@ const Signup = () => {
                   </p>
                 </div>
 
-                <form onSubmit={handleWaitlistSubmit} className="space-y-6">
+                <form onSubmit={handleSignupSubmit} className="space-y-6">
                   {error && (
                     <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-md">
                       <div className="flex items-start">
@@ -439,7 +439,7 @@ const Signup = () => {
                   <div className="flex justify-end space-x-3">
                     <Button
                       variant="outline"
-                      onClick={() => setShowWaitlistForm(false)}
+                      onClick={() => setShowSignupForm(false)}
                     >
                       Back
                     </Button>
