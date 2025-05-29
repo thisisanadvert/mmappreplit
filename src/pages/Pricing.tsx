@@ -131,7 +131,7 @@ const Pricing = () => {
               className="px-6"
               onClick={() => navigate('/signup')}
             >
-              Register Interest
+              Create Account
             </Button>
           </div>
         </div>
@@ -210,7 +210,7 @@ const Pricing = () => {
                     className="w-full"
                     onClick={() => navigate('/signup')}
                   >
-                    {plan.cta}
+                    Create Account
                   </Button>
                 </div>
               </Card>
@@ -293,13 +293,13 @@ const Pricing = () => {
                     className="w-full"
                     rightIcon={<ArrowRight size={16} />}
                   >
-                    Schedule a Demo
+                    Get Started
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
                   >
-                    Contact Sales
+                    Learn More
                   </Button>
                 </div>
               </div>
