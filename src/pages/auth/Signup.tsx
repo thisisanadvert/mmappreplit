@@ -1,7 +1,21 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, UserPlus, Building, Users, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { AlertTriangle, Mail, User, Phone, MapPin, Briefcase, Home } from 'lucide-react';
+import { 
+  Building2, 
+  UserPlus, 
+  Building, 
+  Users, 
+  Shield, 
+  ArrowRight, 
+  CheckCircle2,
+  AlertTriangle, 
+  Mail, 
+  User, 
+  Phone, 
+  MapPin, 
+  Briefcase, 
+  Home 
+} from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
