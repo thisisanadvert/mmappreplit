@@ -127,7 +127,7 @@ const Landing = () => {
               className="px-6"
               onClick={() => navigate('/signup')}
             >
-              Register Interest
+              Create Account
             </Button>
           </div>
         </div>
@@ -155,14 +155,14 @@ const Landing = () => {
                 rightIcon={<ArrowRight size={16} />}
                 onClick={() => navigate('/signup')}
               >
-                Register Interest
+                Get Started
               </Button>
               <Button 
                 variant="outline"
                 size="lg"
                 onClick={() => navigate('/signup')}
               >
-                Get Started
+                Create Account
               </Button>
             </div>
           </div>
