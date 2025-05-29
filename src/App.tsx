@@ -22,6 +22,7 @@ import Landing from './pages/Landing';
 import Pricing from './pages/Pricing';
 import BuildingSetup from './pages/BuildingSetup';
 import { useAuth } from './contexts/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -57,159 +58,161 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={!user ? <Landing /> : <Navigate to={`/${user.role?.split('-')[0]}`} replace />} />
-      <Route path="/pricing" element={!user ? <Pricing /> : <Navigate to={`/${user.role?.split('-')[0]}`} replace />} />
-      
-      {/* Auth routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={!user ? <Signup /> : <Navigate to={`/${user.role?.split('-')[0]}`} replace />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      
-      {/* Profile and Settings routes */}
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <MainLayout />
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<Profile />} />
-      </Route>
-
-      <Route
-        path="/settings"
-        element={
-          <PrivateRoute>
-            <MainLayout />
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<Settings />} />
-      </Route>
-      
-      {/* RTM Director Routes */}
-      <Route
-        path="/rtm/*"
-        element={
-          <PrivateRoute>
-            <RoleBasedRoute allowedRoles={['rtm-director']}>
+    <ErrorBoundary>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={!user ? <Landing /> : <Navigate to={`/${user.role?.split('-')[0]}`} replace />} />
+        <Route path="/pricing" element={!user ? <Pricing /> : <Navigate to={`/${user.role?.split('-')[0]}`} replace />} />
+        
+        {/* Auth routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to={`/${user.role?.split('-')[0]}`} replace />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        
+        {/* Profile and Settings routes */}
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
               <MainLayout />
-            </RoleBasedRoute>
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<RTMDashboard />} />
-        <Route path="issues" element={<IssuesManagement />} />
-        <Route path="finances" element={<Finances />} />
-        <Route path="documents" element={<Documents />} />
-        <Route path="building-setup" element={<BuildingSetup />} />
-        <Route path="announcements" element={<Announcements />} />
-        <Route path="voting" element={<Voting />} />
-        <Route path="agms" element={<AGMs />} />
-        <Route path="rtm" element={<RTMManagement />} />
-        <Route path="suppliers" element={<SupplierNetwork />} />
-      </Route>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Profile />} />
+        </Route>
 
-      {/* SOF Director Routes */}
-      <Route
-        path="/sof/*"
-        element={
-          <PrivateRoute>
-            <RoleBasedRoute allowedRoles={['sof-director']}>
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
               <MainLayout />
-            </RoleBasedRoute>
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<RTMDashboard />} />
-        <Route path="issues" element={<IssuesManagement />} />
-        <Route path="finances" element={<Finances />} />
-        <Route path="documents" element={<Documents />} />
-        <Route path="building-setup" element={<BuildingSetup />} />
-        <Route path="announcements" element={<Announcements />} />
-        <Route path="voting" element={<Voting />} />
-        <Route path="agms" element={<AGMs />} />
-        <Route path="shares" element={<ShareCertificates />} />
-        <Route path="suppliers" element={<SupplierNetwork />} />
-      </Route>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Settings />} />
+        </Route>
+        
+        {/* RTM Director Routes */}
+        <Route
+          path="/rtm/*"
+          element={
+            <PrivateRoute>
+              <RoleBasedRoute allowedRoles={['rtm-director']}>
+                <MainLayout />
+              </RoleBasedRoute>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<RTMDashboard />} />
+          <Route path="issues" element={<IssuesManagement />} />
+          <Route path="finances" element={<Finances />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="building-setup" element={<BuildingSetup />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="voting" element={<Voting />} />
+          <Route path="agms" element={<AGMs />} />
+          <Route path="rtm" element={<RTMManagement />} />
+          <Route path="suppliers" element={<SupplierNetwork />} />
+        </Route>
 
-      {/* Shareholder Routes */}
-      <Route
-        path="/shareholder/*"
-        element={
-          <PrivateRoute>
-            <RoleBasedRoute allowedRoles={['shareholder']}>
-              <MainLayout />
-            </RoleBasedRoute>
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<LeaseholderDashboard />} />
-        <Route path="issues" element={<IssuesManagement />} />
-        <Route path="finances" element={<Finances />} />
-        <Route path="documents" element={<Documents />} />
-        <Route path="building-setup" element={<BuildingSetup />} />
-        <Route path="announcements" element={<Announcements />} />
-        <Route path="voting" element={<Voting />} />
-        <Route path="agms" element={<AGMs />} />
-      </Route>
+        {/* SOF Director Routes */}
+        <Route
+          path="/sof/*"
+          element={
+            <PrivateRoute>
+              <RoleBasedRoute allowedRoles={['sof-director']}>
+                <MainLayout />
+              </RoleBasedRoute>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<RTMDashboard />} />
+          <Route path="issues" element={<IssuesManagement />} />
+          <Route path="finances" element={<Finances />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="building-setup" element={<BuildingSetup />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="voting" element={<Voting />} />
+          <Route path="agms" element={<AGMs />} />
+          <Route path="shares" element={<ShareCertificates />} />
+          <Route path="suppliers" element={<SupplierNetwork />} />
+        </Route>
 
-      {/* Leaseholder Routes */}
-      <Route
-        path="/leaseholder/*"
-        element={
-          <PrivateRoute>
-            <RoleBasedRoute allowedRoles={['leaseholder']}>
-              <MainLayout />
-            </RoleBasedRoute>
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<LeaseholderDashboard />} />
-        <Route path="issues" element={<IssuesManagement />} />
-        <Route path="finances" element={<Finances />} />
-        <Route path="documents" element={<Documents />} />
-        <Route path="building-setup" element={<BuildingSetup />} />
-        <Route path="announcements" element={<Announcements />} />
-        <Route path="voting" element={<Voting />} />
-        <Route path="agms" element={<AGMs />} />
-      </Route>
+        {/* Shareholder Routes */}
+        <Route
+          path="/shareholder/*"
+          element={
+            <PrivateRoute>
+              <RoleBasedRoute allowedRoles={['shareholder']}>
+                <MainLayout />
+              </RoleBasedRoute>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<LeaseholderDashboard />} />
+          <Route path="issues" element={<IssuesManagement />} />
+          <Route path="finances" element={<Finances />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="building-setup" element={<BuildingSetup />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="voting" element={<Voting />} />
+          <Route path="agms" element={<AGMs />} />
+        </Route>
 
-      {/* Management Company Routes */}
-      <Route
-        path="/management/*"
-        element={
-          <PrivateRoute>
-            <RoleBasedRoute allowedRoles={['management-company']}>
-              <MainLayout />
-            </RoleBasedRoute>
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<ManagementDashboard />} />
-        <Route path="issues" element={<IssuesManagement />} />
-        <Route path="finances" element={<Finances />} />
-        <Route path="documents" element={<Documents />} />
-        <Route path="building-setup" element={<BuildingSetup />} />
-        <Route path="announcements" element={<Announcements />} />
-        <Route path="voting" element={<Voting />} />
-        <Route path="agms" element={<AGMs />} />
-        <Route path="suppliers" element={<SupplierNetwork />} />
-      </Route>
+        {/* Leaseholder Routes */}
+        <Route
+          path="/leaseholder/*"
+          element={
+            <PrivateRoute>
+              <RoleBasedRoute allowedRoles={['leaseholder']}>
+                <MainLayout />
+              </RoleBasedRoute>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<LeaseholderDashboard />} />
+          <Route path="issues" element={<IssuesManagement />} />
+          <Route path="finances" element={<Finances />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="building-setup" element={<BuildingSetup />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="voting" element={<Voting />} />
+          <Route path="agms" element={<AGMs />} />
+        </Route>
 
-      {/* Redirect unknown routes to appropriate dashboard */}
-      <Route path="*" element={
-        user ? (
-          <Navigate to={`/${user.role?.split('-')[0]}`} replace />
-        ) : (
-          <Navigate to="/login" replace />
-        )
-      } />
-    </Routes>
+        {/* Management Company Routes */}
+        <Route
+          path="/management/*"
+          element={
+            <PrivateRoute>
+              <RoleBasedRoute allowedRoles={['management-company']}>
+                <MainLayout />
+              </RoleBasedRoute>
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<ManagementDashboard />} />
+          <Route path="issues" element={<IssuesManagement />} />
+          <Route path="finances" element={<Finances />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="building-setup" element={<BuildingSetup />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="voting" element={<Voting />} />
+          <Route path="agms" element={<AGMs />} />
+          <Route path="suppliers" element={<SupplierNetwork />} />
+        </Route>
+
+        {/* Redirect unknown routes to appropriate dashboard */}
+        <Route path="*" element={
+          user ? (
+            <Navigate to={`/${user.role?.split('-')[0]}`} replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+      </Routes>
+    </ErrorBoundary>
   );
 }
 
