@@ -14,7 +14,7 @@ import {
   Phone, 
   MapPin, 
   Briefcase, 
-  Home 
+  Home
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -118,7 +118,6 @@ const Signup = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    console.log('Submitting interest registration...');
     
     try {
       // Try direct database insertion first
@@ -139,10 +138,9 @@ const Signup = () => {
         
       if (error) {
         console.error('Database insertion error:', error);
-        throw error;
+        throw new Error(error.message);
       }
       
-      console.log('Registration successful!');
       setFormSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
