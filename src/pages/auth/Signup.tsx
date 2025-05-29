@@ -201,9 +201,9 @@ const Signup = () => {
               <div className="bg-success-50 p-4 rounded-full mb-6">
                 <CheckCircle2 size={48} className="text-success-500" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Thank You for Your Interest!</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Account Created Successfully!</h3>
               <p className="text-gray-600 mb-8 max-w-md">
-                We've received your registration for the Manage.Management beta. We'll be in touch soon with more information about accessing the platform.
+                Your account has been created. You can now sign in to access the platform.
               </p>
               <div className="space-y-4">
                 <Button 
@@ -261,7 +261,7 @@ const Signup = () => {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900">Tell us about yourself</h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    We'll notify you when beta access is available for {selectedOption?.title}.
+                    Create your account as a {selectedOption?.title}.
                   </p>
                 </div>
 
@@ -449,7 +449,7 @@ const Signup = () => {
                       isLoading={isSubmitting}
                       disabled={isSubmitting}
                     >
-                      Register Interest
+                      Create Account
                     </Button>
                   </div>
                 </form>
