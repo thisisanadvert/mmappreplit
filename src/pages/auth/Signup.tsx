@@ -120,28 +120,35 @@ const Signup = () => {
     setError(null);
     
     try {
-      // Try direct database insertion first
-      const { data, error } = await supabase
-        .from('interest_registrations')
-        .insert({
-          email: formData.email,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role,
-          building_name: formData.buildingName,
-          building_address: formData.buildingAddress,
-          unit_number: formData.unitNumber,
-          phone: formData.phone,
-          company_name: formData.companyName
-        })
-        .select();
-        
-      if (error) {
-        console.error('Database insertion error:', error);
-        throw new Error(error.message);
+      // Generate a temporary password
+      const tempPassword = 'Temp' + Math.floor(Math.random() * 1000000);
+      
+      // Create user account
+      const { data, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: tempPassword,
+        options: {
+          data: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            role: formData.role,
+            buildingName: formData.buildingName,
+            buildingAddress: formData.buildingAddress,
+            unitNumber: formData.unitNumber,
+            phone: formData.phone,
+            companyName: formData.companyName
+          }
+        }
+      });
+
+      if (authError) {
+        throw new Error(authError.message);
       }
       
       setFormSubmitted(true);
+      
+      // Store locally as fallback
+      storeLocalRegistration();
     } catch (error) {
       console.error('Error submitting form:', error);
       
@@ -149,9 +156,9 @@ const Signup = () => {
       storeLocalRegistration();
       
       // Show error message
-      setError(typeof error === 'object' && error !== null 
-        ? (error as Error).message 
-        : 'Failed to register interest. Please try again later.');
+      setError(error instanceof Error ? error.message : 'Failed to register interest. Please try again later.');
+      setIsSubmitting(false);
+      return;
     } finally {
       setIsSubmitting(false);
     }
@@ -440,6 +447,7 @@ const Signup = () => {
                       type="submit"
                       variant="primary"
                       isLoading={isSubmitting}
+                      disabled={isSubmitting}
                     >
                       Register Interest
                     </Button>
