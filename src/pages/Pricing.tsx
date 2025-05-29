@@ -210,7 +210,7 @@ const Pricing = () => {
                     className="w-full"
                     onClick={() => navigate('/signup')}
                   >
-                    Create Account
+                    Get Started
                   </Button>
                 </div>
               </Card>
@@ -292,12 +292,14 @@ const Pricing = () => {
                     variant="primary"
                     className="w-full"
                     rightIcon={<ArrowRight size={16} />}
+                    onClick={() => navigate('/signup')}
                   >
-                    Get Started
+                    Create Account
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
+                    onClick={() => navigate('/signup')}
                   >
                     Learn More
                   </Button>

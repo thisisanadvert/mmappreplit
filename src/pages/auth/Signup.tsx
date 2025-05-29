@@ -120,8 +120,10 @@ const Signup = () => {
     setError(null);
     
     try {
-      // Generate a temporary password
-      const tempPassword = 'Temp' + Math.floor(Math.random() * 1000000);
+      console.log('Submitting form data:', formData);
+      
+      // Generate a secure temporary password
+      const tempPassword = 'Temp' + Math.floor(Math.random() * 1000000) + '!';
       
       // Create user account
       const { data, error: authError } = await supabase.auth.signUp({
@@ -145,6 +147,30 @@ const Signup = () => {
         throw new Error(authError.message);
       }
       
+      console.log('Signup successful:', data);
+      
+      // Try to sign in the user automatically
+      try {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: tempPassword
+        });
+        
+        if (signInError) {
+          console.error('Auto sign-in failed:', signInError);
+          // Continue to success page even if auto-login fails
+        } else {
+          console.log('Auto sign-in successful');
+          // Redirect after a short delay
+          setTimeout(() => {
+            const basePath = formData.role.split('-')[0];
+            navigate(`/${basePath}`);
+          }, 2000);
+        }
+      } catch (signInErr) {
+        console.error('Error during auto sign-in:', signInErr);
+      }
+      
       setFormSubmitted(true);
       
       // Store locally as fallback
@@ -157,8 +183,6 @@ const Signup = () => {
       
       // Show error message
       setError(error instanceof Error ? error.message : 'Failed to register interest. Please try again later.');
-      setIsSubmitting(false);
-      return;
     } finally {
       setIsSubmitting(false);
     }
