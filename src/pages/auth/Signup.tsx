@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, UserPlus, Building, Users, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Mail, User, Phone, MapPin, Briefcase } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -104,7 +104,7 @@ const Signup = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    console.log('Submitting registration form...');
+    console.log('Submitting interest registration...');
     
     try {
       // Try direct database insertion first
@@ -125,7 +125,7 @@ const Signup = () => {
         
       if (error) {
         console.error('Database insertion error:', error);
-        throw new Error('Failed to register interest. Please try again later.');
+        throw error;
       }
       
       console.log('Registration successful!');
@@ -261,13 +261,19 @@ const Signup = () => {
                       <label className="block text-sm font-medium text-gray-700">
                         Email Address
                       </label>
-                      <input
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                      />
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Mail size={16} className="text-gray-400" />
+                        </div>
+                        <input
+                          type="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          placeholder="you@example.com"
+                        />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -275,26 +281,36 @@ const Signup = () => {
                         <label className="block text-sm font-medium text-gray-700">
                           First Name
                         </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.firstName}
-                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        />
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <User size={16} className="text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            value={formData.firstName}
+                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          />
+                        </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
                           Last Name
                         </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.lastName}
-                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        />
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <User size={16} className="text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            value={formData.lastName}
+                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -302,12 +318,18 @@ const Signup = () => {
                       <label className="block text-sm font-medium text-gray-700">
                         Phone Number
                       </label>
-                      <input
-                        type="tel"
-                        value={formData.phone || ''}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                      />
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Phone size={16} className="text-gray-400" />
+                        </div>
+                        <input
+                          type="tel"
+                          value={formData.phone || ''}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          placeholder="e.g., 020 1234 5678"
+                        />
+                      </div>
                     </div>
 
                     {selectedOption?.fields?.includes('buildingName') && (
@@ -315,13 +337,19 @@ const Signup = () => {
                         <label className="block text-sm font-medium text-gray-700">
                           Building Name
                         </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.buildingName || ''}
-                          onChange={(e) => setFormData({ ...formData, buildingName: e.target.value })}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        />
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Building2 size={16} className="text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            value={formData.buildingName || ''}
+                            onChange={(e) => setFormData({ ...formData, buildingName: e.target.value })}
+                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            placeholder="e.g., Waterside Apartments"
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -330,13 +358,19 @@ const Signup = () => {
                         <label className="block text-sm font-medium text-gray-700">
                           Building Address
                         </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.buildingAddress || ''}
-                          onChange={(e) => setFormData({ ...formData, buildingAddress: e.target.value })}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        />
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <MapPin size={16} className="text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            value={formData.buildingAddress || ''}
+                            onChange={(e) => setFormData({ ...formData, buildingAddress: e.target.value })}
+                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            placeholder="e.g., 123 Riverside Drive, London SE1"
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -345,13 +379,19 @@ const Signup = () => {
                         <label className="block text-sm font-medium text-gray-700">
                           Unit Number
                         </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.unitNumber || ''}
-                          onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        />
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Home size={16} className="text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            value={formData.unitNumber || ''}
+                            onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
+                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            placeholder="e.g., 3B"
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -360,13 +400,19 @@ const Signup = () => {
                         <label className="block text-sm font-medium text-gray-700">
                           Company Name
                         </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.companyName || ''}
-                          onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        />
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Briefcase size={16} className="text-gray-400" />
+                          </div>
+                          <input
+                            type="text"
+                            required
+                            value={formData.companyName || ''}
+                            onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                            placeholder="e.g., ABC Property Management Ltd"
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
