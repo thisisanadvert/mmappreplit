@@ -120,10 +120,8 @@ const Signup = () => {
     setError(null);
     
     try {
-      console.log('Submitting form data:', formData);
-      
-      // Generate a secure temporary password
-      const tempPassword = 'Temp' + Math.floor(Math.random() * 1000000) + '!';
+      // Generate a temporary password
+      const tempPassword = `Temp${Math.floor(Math.random() * 1000000)}!`;
       
       // Create user account
       const { data, error: authError } = await supabase.auth.signUp({
@@ -146,43 +144,31 @@ const Signup = () => {
       if (authError) {
         throw new Error(authError.message);
       }
+
+      // Sign in the user automatically
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: tempPassword
+      });
       
-      console.log('Signup successful:', data);
-      
-      // Try to sign in the user automatically
-      try {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: tempPassword
-        });
-        
-        if (signInError) {
-          console.error('Auto sign-in failed:', signInError);
-          // Continue to success page even if auto-login fails
-        } else {
-          console.log('Auto sign-in successful');
-          // Redirect after a short delay
-          setTimeout(() => {
-            const basePath = formData.role.split('-')[0];
-            navigate(`/${basePath}`);
-          }, 2000);
-        }
-      } catch (signInErr) {
-        console.error('Error during auto sign-in:', signInErr);
+      if (signInError && signInError.message !== 'Email not confirmed') {
+        throw new Error('Failed to sign in automatically. Please try signing in manually.');
       }
       
+      // Show success and redirect
       setFormSubmitted(true);
       
-      // Store locally as fallback
-      storeLocalRegistration();
-    } catch (error) {
-      console.error('Error submitting form:', error);
+      // Only redirect if sign in was successful
+      if (!signInError) {
+        setTimeout(() => {
+          const basePath = formData.role.split('-')[0];
+          navigate(`/${basePath}`);
+        }, 2000);
+      }
       
-      // Store locally as fallback
-      storeLocalRegistration();
-      
-      // Show error message
-      setError(error instanceof Error ? error.message : 'Failed to register interest. Please try again later.');
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again or contact support.');
     } finally {
       setIsSubmitting(false);
     }
