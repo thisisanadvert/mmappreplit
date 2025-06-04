@@ -17,9 +17,9 @@ import {
   Scale,
   Home
 } from 'lucide-react';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
 import Footer from '../components/layout/Footer';
 
 const Landing = () => {
@@ -113,22 +113,6 @@ const Landing = () => {
             >
               Login
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="px-4"
-              onClick={() => navigate('/signup')}
-            >
-              Get Started
-            </Button>
-            <Button 
-              variant="primary" 
-              size="sm"
-              className="px-6"
-              onClick={() => navigate('/signup')}
-            >
-              Create Account
-            </Button>
           </div>
         </div>
       </nav>
@@ -152,14 +136,8 @@ const Landing = () => {
               <Button 
                 variant="primary"
                 size="lg"
+                className="px-8"
                 rightIcon={<ArrowRight size={16} />}
-                onClick={() => navigate('/signup')}
-              >
-                Create Account
-              </Button>
-              <Button 
-                variant="outline"
-                size="lg"
                 onClick={() => navigate('/signup')}
               >
                 Get Started
