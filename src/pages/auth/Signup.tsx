@@ -1,475 +1,235 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Building2, 
-  UserPlus, 
-  Building, 
-  Users, 
   Shield, 
+  Users, 
   ArrowRight, 
   CheckCircle2,
-  AlertTriangle, 
-  Mail, 
-  User, 
-  Phone, 
-  MapPin, 
-  Briefcase, 
+  Building,
+  FileText,
+  Vote,
+  MessageSquare,
+  BarChart4,
+  Clock,
+  Heart,
+  Newspaper,
+  Scale,
   Home
 } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import { supabase } from '../../lib/supabase';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import Badge from '../components/ui/Badge';
+import Footer from '../components/layout/Footer';
 
-type SignupType = 'rtm-director' | 'sof-director' | 'homeowner' | 'management-company';
-
-interface SignupFormData {
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: SignupType;
-  buildingName?: string;
-  buildingAddress?: string;
-  unitNumber?: string;
-  companyName?: string;
-  phone?: string;
-}
-
-const signupOptions = [
-  {
-    id: 'rtm-director',
-    title: 'Right to Manage Director',
-    description: 'Join as an RTM director or express interest in becoming one',
-    icon: UserPlus,
-    color: 'bg-primary-100 text-primary-600',
-    available: true,
-    fields: ['buildingName', 'buildingAddress', 'unitNumber', 'phone']
-  },
-  {
-    id: 'sof-director',
-    title: 'Share of Freehold Director',
-    description: 'Manage your Share of Freehold company and building',
-    icon: Building,
-    color: 'bg-secondary-100 text-secondary-600',
-    available: true,
-    fields: ['buildingName', 'buildingAddress', 'unitNumber', 'phone']
-  },
-  {
-    id: 'homeowner',
-    title: 'Homeowner',
-    description: 'Access your building\'s management platform and participate in decisions',
-    icon: Users,
-    color: 'bg-accent-100 text-accent-600',
-    subtypes: [
-      { id: 'leaseholder', label: 'Leaseholder' },
-      { id: 'shareholder', label: 'Share of Freeholder' }
-    ],
-    fields: ['buildingName', 'unitNumber', 'phone'],
-    available: false
-  },
-  {
-    id: 'management-company',
-    title: 'Management Company',
-    description: 'Manage multiple properties with transparency and efficiency',
-    icon: Shield,
-    color: 'bg-warning-100 text-warning-600',
-    fields: ['companyName', 'phone'],
-    available: false
-  }
-];
-
-const Signup = () => {
-  const [selectedType, setSelectedType] = useState<SignupType>('rtm-director');
-  const [showSignupForm, setShowSignupForm] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState<SignupFormData>({
-    email: '',
-    firstName: '',
-    lastName: '',
-    role: 'rtm-director'
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const Landing = () => {
   const navigate = useNavigate();
 
-  const handleOptionClick = (type: SignupType) => {
-    setSelectedType(type);
-    const option = signupOptions.find(opt => opt.id === type);
-    setFormData(prev => ({ ...prev, role: type }));
-    setShowSignupForm(true);
-  };
-
-  // Store registration in local storage as a fallback
-  const storeLocalRegistration = () => {
-    try {
-      localStorage.setItem('pendingRegistration', JSON.stringify({
-        ...formData,
-        timestamp: new Date().toISOString()
-      }));
-      console.log('Stored registration data locally');
-      return true;
-    } catch (err) {
-      console.error('Error storing registration locally:', err);
-      return false;
+  const features = [
+    {
+      title: 'Document Management',
+      description: 'Securely store and share important building documents and records.',
+      icon: FileText,
+      color: 'bg-blue-100 text-blue-600'
+    },
+    {
+      title: 'Voting System',
+      description: 'Conduct polls and make collective decisions efficiently.',
+      icon: Vote,
+      color: 'bg-purple-100 text-purple-600'
+    },
+    {
+      title: 'Communication Hub',
+      description: 'Keep everyone informed with announcements and updates.',
+      icon: MessageSquare,
+      color: 'bg-green-100 text-green-600'
+    },
+    {
+      title: 'Financial Tracking',
+      description: 'Monitor service charges and building finances transparently.',
+      icon: BarChart4,
+      color: 'bg-yellow-100 text-yellow-600'
+    },
+    {
+      title: 'Maintenance Scheduling',
+      description: 'Plan and track building maintenance and repairs.',
+      icon: Clock,
+      color: 'bg-red-100 text-red-600'
+    },
+    {
+      title: 'Supplier Network',
+      description: 'Access trusted suppliers for building services.',
+      icon: Heart,
+      color: 'bg-pink-100 text-pink-600'
     }
-  };
+  ];
 
-  const handleSignupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-    
-    try {
-      // Generate a temporary password
-      const tempPassword = `Temp${Math.floor(Math.random() * 1000000)}!`;
-      
-      // Create user account
-      const { data, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: tempPassword,
-        options: {
-          data: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            role: formData.role,
-            buildingName: formData.buildingName,
-            buildingAddress: formData.buildingAddress,
-            unitNumber: formData.unitNumber,
-            phone: formData.phone,
-            companyName: formData.companyName
-          }
-        }
-      });
-
-      if (authError) {
-        throw new Error(authError.message);
-      }
-
-      // Sign in the user automatically
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: tempPassword
-      });
-      
-      if (signInError && signInError.message !== 'Email not confirmed') {
-        throw new Error('Failed to sign in automatically. Please try signing in manually.');
-      }
-      
-      // Show success and redirect
-      setFormSubmitted(true);
-      
-      // Only redirect if sign in was successful
-      if (!signInError) {
-        setTimeout(() => {
-          const basePath = formData.role.split('-')[0];
-          navigate(`/${basePath}`);
-        }, 2000);
-      }
-      
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again or contact support.');
-    } finally {
-      setIsSubmitting(false);
+  const newsItems = [
+    {
+      category: 'Feature Update',
+      date: 'May 3, 2025',
+      title: 'New Financial Dashboard',
+      description: 'We\'ve launched an improved financial dashboard with enhanced reporting capabilities and real-time tracking of service charges.'
+    },
+    {
+      category: 'Community',
+      date: 'May 1, 2025',
+      title: 'RTM Success Stories',
+      description: 'Read how buildings across the UK are successfully managing their properties with our platform.'
+    },
+    {
+      category: 'Compliance',
+      date: 'April 28, 2025',
+      title: 'Updated Safety Guidelines',
+      description: 'Stay compliant with the latest building safety regulations and management requirements.'
     }
-  };
-
-  const selectedOption = signupOptions.find(opt => opt.id === selectedType);
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="flex items-center space-x-2">
-            <div className="bg-primary-600 text-white p-2 rounded">
-              <Building2 size={24} />
-            </div>
-            <span className="text-2xl font-bold text-primary-800 pixel-font">Manage.Management</span>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Navigation */}
+      <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="bg-white/80 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-gray-200">
+          <div className="flex items-center space-x-4">
+            <a 
+              href="https://manage.management"
+              className="px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Home
+            </a>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="px-4"
+              onClick={() => navigate('/pricing')}
+            >
+              Pricing
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="px-4"
+              onClick={() => navigate('/login')}
+            >
+              Login
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="px-4"
+              onClick={() => navigate('/signup')}
+            >
+              Get Started
+            </Button>
+            <Button 
+              variant="primary" 
+              size="sm"
+              className="px-6"
+              onClick={() => navigate('/signup')}
+            >
+              Create Account
+            </Button>
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your account
-        </h2>
-        {!formSubmitted ? (
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
-              Sign in
-            </Link>
-          </p>
-        ) : (
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Thank you for your interest!
-          </p>
-        )}
-      </div>
+      </nav>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-        {formSubmitted ? (
-          <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10 text-center">
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="bg-success-50 p-4 rounded-full mb-6">
-                <CheckCircle2 size={48} className="text-success-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Account Created Successfully!</h3>
-              <p className="text-gray-600 mb-8 max-w-md">
-                Your account has been created. You can now sign in to access the platform.
-              </p>
-              <div className="space-y-4">
-                <Button 
-                  variant="primary" 
-                  onClick={() => navigate('/login')}
-                  className="w-full"
-                >
-                  Sign In
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/')}
-                  className="w-full"
-                >
-                  Return to Home
-                </Button>
-              </div>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden pt-32 pb-16">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-accent-500/10 to-secondary-500/10" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900">
+              Property Management,{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">
+                Simplified
+              </span>
+            </h1>
+            <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+              The complete platform for residential building management, designed for RTM directors, Share of Freehold directors, and homeowners.
+            </p>
+            <div className="mt-8 flex justify-center gap-4">
+              <Button 
+                variant="primary"
+                size="lg"
+                rightIcon={<ArrowRight size={16} />}
+                onClick={() => navigate('/signup')}
+              >
+                Create Account
+              </Button>
+              <Button 
+                variant="outline"
+                size="lg"
+                onClick={() => navigate('/signup')}
+              >
+                Get Started
+              </Button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
-            {!showSignupForm ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 gap-4">
-                  {signupOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => handleOptionClick(option.id as SignupType)}
-                      className={`relative p-6 border-2 rounded-lg text-left transition-all ${
-                        selectedType === option.id
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-lg ${option.color}`}>
-                          <option.icon size={24} />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold text-gray-900">{option.title}</h3>
-                            {!option.available && (
-                              <Badge variant="accent">Coming Soon</Badge>
-                            )}
-                          </div>
-                          <p className="mt-1 text-gray-600">{option.description}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Tell us about yourself</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Create your account as a {selectedOption?.title}.
-                  </p>
-                </div>
 
-                <form onSubmit={handleSignupSubmit} className="space-y-6">
-                  {error && (
-                    <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-md">
-                      <div className="flex items-start">
-                        <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                      {error}
-                      </div>
+          {/* Features Grid */}
+          <div className="mt-24">
+            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+              Everything you need to manage your building
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div 
+                    key={index}
+                    className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
+                  >
+                    <div className={`${feature.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
+                      <Icon size={24} />
                     </div>
-                  )}
-                  
-                  <div className="grid grid-cols-1 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Email Address
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Mail size={16} className="text-gray-400" />
-                        </div>
-                        <input
-                          type="email"
-                          required
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                          placeholder="you@example.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          First Name
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <User size={16} className="text-gray-400" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            value={formData.firstName}
-                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Last Name
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <User size={16} className="text-gray-400" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            value={formData.lastName}
-                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Phone Number
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Phone size={16} className="text-gray-400" />
-                        </div>
-                        <input
-                          type="tel"
-                          value={formData.phone || ''}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                          placeholder="e.g., 020 1234 5678"
-                        />
-                      </div>
-                    </div>
-
-                    {selectedOption?.fields?.includes('buildingName') && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Building Name
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Building2 size={16} className="text-gray-400" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            value={formData.buildingName || ''}
-                            onChange={(e) => setFormData({ ...formData, buildingName: e.target.value })}
-                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                            placeholder="e.g., Waterside Apartments"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedOption?.fields?.includes('buildingAddress') && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Building Address
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <MapPin size={16} className="text-gray-400" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            value={formData.buildingAddress || ''}
-                            onChange={(e) => setFormData({ ...formData, buildingAddress: e.target.value })}
-                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                            placeholder="e.g., 123 Riverside Drive, London SE1"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedOption?.fields?.includes('unitNumber') && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Unit Number
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Home size={16} className="text-gray-400" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            value={formData.unitNumber || ''}
-                            onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
-                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                            placeholder="e.g., 3B"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedOption?.fields?.includes('companyName') && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Company Name
-                        </label>
-                        <div className="mt-1 relative rounded-md shadow-sm">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Briefcase size={16} className="text-gray-400" />
-                          </div>
-                          <input
-                            type="text"
-                            required
-                            value={formData.companyName || ''}
-                            onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                            className="mt-1 block w-full pl-10 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                            placeholder="e.g., ABC Property Management Ltd"
-                          />
-                        </div>
-                      </div>
-                    )}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600">
+                      {feature.description}
+                    </p>
                   </div>
-
-                  <div className="flex justify-end space-x-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowSignupForm(false)}
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      isLoading={isSubmitting}
-                      disabled={isSubmitting}
-                    >
-                      Create Account
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
-        )}
+
+          {/* Latest Updates Section */}
+          <div className="mt-24">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900">Latest Updates</h2>
+              <p className="mt-4 text-lg text-gray-600">Stay informed about the latest changes in property management</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {newsItems.map((item, index) => (
+                <Card key={index} hoverable className="h-full">
+                  <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <Badge variant="primary">{item.category}</Badge>
+                      <span className="text-sm text-gray-500">{item.date}</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
+                    <p className="text-gray-600 flex-grow">{item.description}</p>
+                    <Button 
+                      variant="ghost" 
+                      className="mt-4"
+                      rightIcon={<ArrowRight size={16} />}
+                    >
+                      Read More
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
 
-export default Signup;
+export default Landing;
