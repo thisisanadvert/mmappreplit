@@ -20,7 +20,7 @@ import {
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import Footer from '../components/layout/Footer';
+import Footer from '../../components/layout/Footer';
 
 const Landing = () => {
   const navigate = useNavigate();
