@@ -1,213 +1,187 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Building2, 
-  Shield, 
-  Users, 
-  ArrowRight, 
-  CheckCircle2,
-  Building,
-  FileText,
-  Vote,
-  MessageSquare,
-  BarChart4,
-  Clock,
-  Heart,
-  Newspaper,
-  Scale,
-  Home
-} from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Building2, UserPlus, Building, Users, Shield, ArrowRight } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import Footer from '../../components/layout/Footer';
 
-const Landing = () => {
+type SignupType = 'rtm-director' | 'sof-director' | 'homeowner' | 'management-company';
+
+const signupOptions = [
+  {
+    id: 'rtm-director',
+    title: 'Right to Manage Director',
+    description: 'Join as an RTM director or express interest in becoming one',
+    icon: UserPlus,
+    color: 'bg-primary-100 text-primary-600',
+    available: true
+  },
+  {
+    id: 'sof-director',
+    title: 'Share of Freehold Director',
+    description: 'Manage your Share of Freehold company and building',
+    icon: Building,
+    color: 'bg-secondary-100 text-secondary-600',
+    available: true
+  },
+  {
+    id: 'homeowner',
+    title: 'Homeowner',
+    description: 'Access your building\'s management platform and participate in decisions',
+    icon: Users,
+    color: 'bg-accent-100 text-accent-600',
+    subtypes: [
+      { id: 'leaseholder', label: 'Leaseholder' },
+      { id: 'shareholder', label: 'Share of Freeholder' }
+    ],
+    available: false
+  },
+  {
+    id: 'management-company',
+    title: 'Management Company',
+    description: 'Manage multiple properties with transparency and efficiency',
+    icon: Shield,
+    color: 'bg-warning-100 text-warning-600',
+    available: false
+  }
+];
+
+const Signup = () => {
+  const [selectedType, setSelectedType] = useState<SignupType>('rtm-director');
+  const [selectedSubtype, setSelectedSubtype] = useState<string>('');
+  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
   const navigate = useNavigate();
 
-  const features = [
-    {
-      title: 'Document Management',
-      description: 'Securely store and share important building documents and records.',
-      icon: FileText,
-      color: 'bg-blue-100 text-blue-600'
-    },
-    {
-      title: 'Voting System',
-      description: 'Conduct polls and make collective decisions efficiently.',
-      icon: Vote,
-      color: 'bg-purple-100 text-purple-600'
-    },
-    {
-      title: 'Communication Hub',
-      description: 'Keep everyone informed with announcements and updates.',
-      icon: MessageSquare,
-      color: 'bg-green-100 text-green-600'
-    },
-    {
-      title: 'Financial Tracking',
-      description: 'Monitor service charges and building finances transparently.',
-      icon: BarChart4,
-      color: 'bg-yellow-100 text-yellow-600'
-    },
-    {
-      title: 'Maintenance Scheduling',
-      description: 'Plan and track building maintenance and repairs.',
-      icon: Clock,
-      color: 'bg-red-100 text-red-600'
-    },
-    {
-      title: 'Supplier Network',
-      description: 'Access trusted suppliers for building services.',
-      icon: Heart,
-      color: 'bg-pink-100 text-pink-600'
+  const handleOptionClick = (type: SignupType) => {
+    setSelectedType(type);
+    const option = signupOptions.find(opt => opt.id === type);
+    if (!option?.available) {
+      setShowWaitlistForm(true);
     }
-  ];
+  };
 
-  const newsItems = [
-    {
-      category: 'Feature Update',
-      date: 'May 3, 2025',
-      title: 'New Financial Dashboard',
-      description: 'We\'ve launched an improved financial dashboard with enhanced reporting capabilities and real-time tracking of service charges.'
-    },
-    {
-      category: 'Community',
-      date: 'May 1, 2025',
-      title: 'RTM Success Stories',
-      description: 'Read how buildings across the UK are successfully managing their properties with our platform.'
-    },
-    {
-      category: 'Compliance',
-      date: 'April 28, 2025',
-      title: 'Updated Safety Guidelines',
-      description: 'Stay compliant with the latest building safety regulations and management requirements.'
-    }
-  ];
+  const handleWaitlistSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert('Thank you for joining the waitlist! We\'ll notify you when registration opens.');
+    setWaitlistEmail('');
+    setShowWaitlistForm(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Navigation */}
-      <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-white/80 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-gray-200">
-          <div className="flex items-center space-x-4">
-            <a 
-              href="https://manage.management"
-              className="px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              Home
-            </a>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="px-4"
-              onClick={() => navigate('/pricing')}
-            >
-              Pricing
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="px-4"
-              onClick={() => navigate('/login')}
-            >
-              Login
-            </Button>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center">
+          <div className="flex items-center space-x-2">
+            <div className="bg-primary-600 text-white p-2 rounded">
+              <Building2 size={24} />
+            </div>
+            <span className="text-2xl font-bold text-primary-800 pixel-font">Manage.Management</span>
           </div>
         </div>
-      </nav>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Create your account
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
+            Sign in
+          </Link>
+        </p>
+      </div>
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden pt-32 pb-16">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-accent-500/10 to-secondary-500/10" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900">
-              Property Management,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">
-                Simplified
-              </span>
-            </h1>
-            <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-              The complete platform for residential building management, designed for RTM directors, Share of Freehold directors, and homeowners.
-            </p>
-            <div className="mt-8 flex justify-center gap-4">
-              <Button 
-                variant="primary"
-                size="lg"
-                className="px-8"
-                rightIcon={<ArrowRight size={16} />}
-                onClick={() => navigate('/signup')}
-              >
-                Get Started
-              </Button>
-            </div>
-          </div>
-
-          {/* Features Grid */}
-          <div className="mt-24">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-              Everything you need to manage your building
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => {
-                const Icon = feature.icon;
-                return (
-                  <div 
-                    key={index}
-                    className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
-                  >
-                    <div className={`${feature.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-                      <Icon size={24} />
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
+        <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              {signupOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleOptionClick(option.id as SignupType)}
+                  className={`relative p-6 border-2 rounded-lg text-left transition-all ${
+                    selectedType === option.id
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-lg ${option.color}`}>
+                      <option.icon size={24} />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600">
-                      {feature.description}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Latest Updates Section */}
-          <div className="mt-24">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900">Latest Updates</h2>
-              <p className="mt-4 text-lg text-gray-600">Stay informed about the latest changes in property management</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {newsItems.map((item, index) => (
-                <Card key={index} hoverable className="h-full">
-                  <div className="flex flex-col h-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <Badge variant="primary">{item.category}</Badge>
-                      <span className="text-sm text-gray-500">{item.date}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-gray-900">{option.title}</h3>
+                        {!option.available && (
+                          <Badge variant="accent">Coming Soon</Badge>
+                        )}
+                      </div>
+                      <p className="mt-1 text-gray-600">{option.description}</p>
+                      
+                      {option.subtypes && selectedType === option.id && (
+                        <div className="mt-4 space-x-4">
+                          {option.subtypes.map(subtype => (
+                            <button
+                              key={subtype.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedSubtype(subtype.id);
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                selectedSubtype === subtype.id
+                                  ? 'bg-primary-100 text-primary-800'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {subtype.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-gray-600 flex-grow">{item.description}</p>
-                    <Button 
-                      variant="ghost" 
-                      className="mt-4"
-                      rightIcon={<ArrowRight size={16} />}
-                    >
-                      Read More
-                    </Button>
                   </div>
-                </Card>
+                </button>
               ))}
             </div>
+
+            {showWaitlistForm ? (
+              <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Join the Waitlist</h3>
+                <form onSubmit={handleWaitlistSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="waitlist-email" className="block text-sm font-medium text-gray-900 mb-2">
+                      Email address
+                    </label>
+                    <input
+                      type="email"
+                      id="waitlist-email"
+                      value={waitlistEmail}
+                      onChange={(e) => setWaitlistEmail(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-100 shadow-sm text-base"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" variant="primary" className="w-full py-3 text-base">
+                    Join Waitlist
+                  </Button>
+                </form>
+              </div>
+            ) : (
+              <div className="flex justify-end">
+                <Button
+                  variant="primary"
+                  rightIcon={<ArrowRight size={16} />}
+                  onClick={() => navigate('/signup/details')}
+                  disabled={!signupOptions.find(opt => opt.id === selectedType)?.available}
+                >
+                  Continue
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
 
-export default Landing;
+export default Signup;
